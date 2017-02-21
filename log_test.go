@@ -2,7 +2,10 @@ package lopher
 
 import (
 	"bytes"
+	"math"
+	"os"
 	"testing"
+	"time"
 )
 
 func TestFmtFuncs(t *testing.T) {
@@ -57,4 +60,24 @@ func TestBaseFuncs(t *testing.T) {
 			t.Errorf("%s FAILED\n\texpected: \"%s\"\tactual:   \"%s\"", tcn, tc.expected, actual)
 		}
 	}
+}
+
+func Example() {
+	l := New(os.Stdout, false, LFNone)
+	started := time.Now()
+	l.Info("App Started.")
+
+	l.Debug("Taking time measurement...")
+
+	// Setting debug enables the debug level
+	l.SetDebug(true)
+
+	time.Sleep(time.Second)
+	s := math.Floor(time.Since(started).Seconds())
+	l.Debugf("App ran for %v seconds.", s)
+	l.Info("App Exiting.")
+	// Output:
+	// [INFO] App Started.
+	// [DEBUG] App ran for 1 seconds.
+	// [INFO] App Exiting.
 }
