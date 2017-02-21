@@ -62,6 +62,27 @@ func TestBaseFuncs(t *testing.T) {
 	}
 }
 
+func Example_package() {
+	SetFlags(LFNone)
+	started := time.Now()
+	Info("App Started.")
+
+	Debug("Taking time measurement...")
+
+	// Setting debug enables the debug level
+	SetDebug(true)
+
+	time.Sleep(time.Second)
+	s := math.Floor(time.Since(started).Seconds())
+	Debugf("App ran for %v seconds.", s)
+	Info("App Exiting.")
+	// Output:
+	// [INFO] App Started.
+	// [DEBUG] App ran for 1 seconds.
+	// [INFO] App Exiting.
+
+}
+
 func Example() {
 	l := New(os.Stdout, false, LFNone)
 	started := time.Now()
