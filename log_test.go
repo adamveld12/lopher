@@ -64,6 +64,7 @@ func TestBaseFuncs(t *testing.T) {
 
 func Example_package() {
 	SetFlags(LFNone)
+	SetOutput(os.Stdout)
 	started := time.Now()
 	Info("App Started.")
 
