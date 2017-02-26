@@ -1,5 +1,6 @@
 /*
 Package lopher is inspired by Dave Cheney's blog post on logging: https://dave.cheney.net/2015/11/05/lets-talk-about-logging
+
 lopher only supports two logging levels:
 
 1. Things that developers care about when they are developing or debugging software. (DEBUG)
