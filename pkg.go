@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-var dLogger = New(os.Stderr, false, LFstdFlags)
+var dLogger = New(os.Stderr, false, "", LFstdFlags)
 
 // Info logs at info level
 func Info(v ...interface{}) {
