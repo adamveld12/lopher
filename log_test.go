@@ -109,12 +109,12 @@ func Example_package() {
 
 	time.Sleep(time.Second)
 	s := math.Floor(time.Since(started).Seconds())
-	Debugf("App ran for %v seconds.", s)
-	Info("App Exiting.")
+	Debugf("App ran for %.3f minutes.", time.Since(started).Minutes())
+	Infof("App Exiting after %v second.", s)
 	// Output:
 	// [INFO] App Started.
-	// [DEBUG] App ran for 1 seconds.
-	// [INFO] App Exiting.
+	// [DEBUG] App ran for 0.017 minutes.
+	// [INFO] App Exiting after 1 second.
 
 }
 
