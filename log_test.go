@@ -8,8 +8,38 @@ import (
 	"time"
 )
 
+func TestPrefix(t *testing.T) {
+	l := New(nil, false, "", LFNone)
+	cases := map[string]struct {
+		subject  func(input ...interface{})
+		input    string
+		expected string
+		prefix   string
+		devMode  bool
+	}{
+		"\"main:\" prefix Info":     {l.Info, "Hello World!", "[INFO] main:Hello World!\n", "main:", false},
+		"empty string prefix Info":  {l.Info, "Hello World!", "[INFO] Hello World!\n", "", false},
+		"\"main:\" prefix Debug":    {l.Debug, "Hello World!", "[DEBUG] main:Hello World!\n", "main:", true},
+		"empty string prefix Debug": {l.Debug, "Hello World!", "[DEBUG] Hello World!\n", "", true},
+	}
+
+	for tcn, tc := range cases {
+		t.Run(tcn, func(t *testing.T) {
+			b := &bytes.Buffer{}
+			l.SetDebug(tc.devMode)
+			l.SetOutput(b)
+			l.SetPrefix(tc.prefix)
+			tc.subject(tc.input)
+			actual := b.String()
+			if actual != tc.expected {
+				t.Errorf("%s FAILED\n\texpected: \"%s\"\tactual:   \"%s\"", tcn, tc.expected, actual)
+			}
+		})
+	}
+}
+
 func TestFmtFuncs(t *testing.T) {
-	l := New(nil, false, LFNone)
+	l := New(nil, false, "", LFNone)
 	cases := map[string]struct {
 		subject  func(string, ...interface{})
 		fmt      string
@@ -24,19 +54,21 @@ func TestFmtFuncs(t *testing.T) {
 	}
 
 	for tcn, tc := range cases {
-		b := &bytes.Buffer{}
-		l.SetDebug(tc.devMode)
-		l.SetOutput(b)
-		tc.subject(tc.fmt, tc.input...)
-		actual := b.String()
-		if actual != tc.expected {
-			t.Errorf("%s FAILED\n\texpected: \"%s\"\tactual:   \"%s\"", tcn, tc.expected, actual)
-		}
+		t.Run(tcn, func(t *testing.T) {
+			b := &bytes.Buffer{}
+			l.SetDebug(tc.devMode)
+			l.SetOutput(b)
+			tc.subject(tc.fmt, tc.input...)
+			actual := b.String()
+			if actual != tc.expected {
+				t.Errorf("%s FAILED\n\texpected: \"%s\"\tactual:   \"%s\"", tcn, tc.expected, actual)
+			}
+		})
 	}
 }
 
 func TestBaseFuncs(t *testing.T) {
-	l := New(nil, false, LFNone)
+	l := New(nil, false, "", LFNone)
 	cases := map[string]struct {
 		subject  func(...interface{})
 		input    []interface{}
@@ -51,14 +83,16 @@ func TestBaseFuncs(t *testing.T) {
 	}
 
 	for tcn, tc := range cases {
-		b := &bytes.Buffer{}
-		l.SetOutput(b)
-		l.SetDebug(tc.debug)
-		tc.subject(tc.input...)
-		actual := b.String()
-		if actual != tc.expected {
-			t.Errorf("%s FAILED\n\texpected: \"%s\"\tactual:   \"%s\"", tcn, tc.expected, actual)
-		}
+		t.Run(tcn, func(t *testing.T) {
+			b := &bytes.Buffer{}
+			l.SetOutput(b)
+			l.SetDebug(tc.debug)
+			tc.subject(tc.input...)
+			actual := b.String()
+			if actual != tc.expected {
+				t.Errorf("%s FAILED\n\texpected: \"%s\"\tactual:   \"%s\"", tcn, tc.expected, actual)
+			}
+		})
 	}
 }
 
@@ -75,19 +109,19 @@ func Example_package() {
 
 	time.Sleep(time.Second)
 	s := math.Floor(time.Since(started).Seconds())
-	Debugf("App ran for %v seconds.", s)
-	Info("App Exiting.")
+	Debugf("App ran for %.3f minutes.", time.Since(started).Minutes())
+	Infof("App Exiting after %v second.", s)
 	// Output:
 	// [INFO] App Started.
-	// [DEBUG] App ran for 1 seconds.
-	// [INFO] App Exiting.
+	// [DEBUG] App ran for 0.017 minutes.
+	// [INFO] App Exiting after 1 second.
 
 }
 
 func Example() {
-	l := New(os.Stdout, false, LFNone)
+	l := New(os.Stdout, false, "App: ", LFNone)
 	started := time.Now()
-	l.Info("App Started.")
+	l.Info("Started.")
 
 	l.Debug("Taking time measurement...")
 
@@ -96,10 +130,10 @@ func Example() {
 
 	time.Sleep(time.Second)
 	s := math.Floor(time.Since(started).Seconds())
-	l.Debugf("App ran for %v seconds.", s)
-	l.Info("App Exiting.")
+	l.Debugf("ran for %v seconds.", s)
+	l.Info("Exiting.")
 	// Output:
-	// [INFO] App Started.
-	// [DEBUG] App ran for 1 seconds.
-	// [INFO] App Exiting.
+	// [INFO] App: Started.
+	// [DEBUG] App: ran for 1 seconds.
+	// [INFO] App: Exiting.
 }

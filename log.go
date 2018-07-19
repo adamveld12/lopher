@@ -45,6 +45,9 @@ type Logger interface {
 
 	// SetDebug sets debug mode
 	SetDebug(bool)
+
+	// SetPrefix sets the logger's prefix text that is prepended to each log line
+	SetPrefix(string)
 }
 
 // LogFlags are a set of flags which define the prefix for each log entry
@@ -73,8 +76,14 @@ const (
 
 // New creates a new Logger
 // Loggers are immutable
-func New(out io.Writer, debug bool, flags LogFlags) Logger {
-	return &Log{sync.Mutex{}, out, debug, flags}
+func New(out io.Writer, debug bool, prefix string, flags LogFlags) Logger {
+	return &Log{
+		sync.Mutex{},
+		out,
+		debug,
+		flags,
+		prefix,
+	}
 }
 
 // Log is a simple implementation of Logger
@@ -86,6 +95,8 @@ type Log struct {
 	DebugMode bool
 	// Flags are a set of flags to use for setting up log time stamps
 	Flags LogFlags
+	// Prefix is the prefix string that is prepended before each log line
+	Prefix string
 }
 
 // SetFlags sets the log flags used by the Logger
@@ -137,6 +148,14 @@ func (l *Log) Debugf(fmtStr string, v ...interface{}) {
 	l.print("DEBUG", fmt.Sprintf(fmtStr, v...))
 }
 
+// SetPrefix sets the logger's prefix string
+func (l *Log) SetPrefix(prefixStr string) {
+	l.Lock()
+	defer l.Unlock()
+
+	l.Prefix = prefixStr
+}
+
 func (l *Log) print(level string, v ...interface{}) error {
 	l.Lock()
 	defer l.Unlock()
@@ -158,7 +177,7 @@ func (l *Log) print(level string, v ...interface{}) error {
 	header := fmtHeader(l.Flags, caller, time.Now())
 	// wipe out all of the new lines for better structured logging
 	args := strings.Replace(fmt.Sprint(v...), "\n", " ", -1)
-	_, err := fmt.Fprintf(l, "%s[%s] %+v\n", header, level, strings.TrimSpace(args))
+	_, err := fmt.Fprintf(l, "%s[%s] %s%+v\n", header, level, l.Prefix, strings.TrimSpace(args))
 	return fmt.Errorf("Could not write to output: %+v", err)
 }
 
